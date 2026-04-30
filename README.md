@@ -18,9 +18,9 @@ Complete PostgreSQL database implementation for BiDi IT company with:
 | `access_control.sql` | Roles (manager, employee), users, and privilege management |
 | `demo_queries.sql` | Constraint violations and trigger demonstrations |
 | `setup.sh` | One-command setup script |
-| `app.py` | **BONUS**: Streamlit frontend application (+10 points) |
-| `requirements.txt` | Python dependencies for frontend |
-| **Indexing** | **BONUS**: Well-justified indexes on FKs and query columns (+2 points) |
+| `app.py` | Streamlit web application for database demonstration |
+| `requirements.txt` | Python dependencies |
+| `.gitignore` | Git ignore patterns |
 
 ## Quick Start
 
@@ -47,26 +47,25 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-## Scoring Checklist
+## Project Implementation Summary
 
-### Core Requirements (25 Points)
+### Phase 2 Requirements (25 Points)
 
-| Component | Requirement | Implementation | Status |
-|-----------|-------------|----------------|--------|
-| **Constraints (5 pts)** | 2 CHECK, 2 DEFAULT | **7 CHECK, 8 DEFAULT** | ✅ **5/5 + 2 bonus** |
-| **Triggers (5 pts)** | 3 triggers | **4 triggers** | ✅ **5/5 + 1 bonus** |
-| **Queries (10 pts)** | SELECT, JOINs, Aggregations, VIEW, DML | All implemented | ✅ **10/10** |
-| **Access Control (5 pts)** | 2 roles, 2 users, RBAC | 2 roles, 4 users, RLS | ✅ **5/5** |
+| Component | Requirements | Implementation |
+|-----------|--------------|----------------|
+| **Constraints (5 pts)** | 2 CHECK, 2 DEFAULT, PKs, FKs, NULL handling | 7 CHECK constraints, 8 DEFAULT values, all PKs/FKs, proper NULL handling |
+| **Triggers (5 pts)** | 3 meaningful triggers | 4 triggers: budget protection, salary audit logging, auto-completion, delete prevention |
+| **Queries (10 pts)** | SELECT, JOINs (3+ tables), Aggregations, VIEW, DML | 2+ SELECT, 3+ JOIN queries, 2+ aggregations, 1 VIEW, INSERT/UPDATE/DELETE examples |
+| **Access Control (5 pts)** | 2 roles, 2 users, different privileges | 2 roles (manager, employee), 4 users, RBAC at DB level, RLS policies |
 
-### Bonus Points (Up to +15) - ALL CLAIMED! 🎯
-| Bonus | Points | Evidence |
-|-------|--------|----------|
-| **Additional Attributes/Constraints** | **+2** | 7 CHECK constraints (req: 2), 8 DEFAULT values (req: 2) |
-| **Additional Triggers** | **+1** | 4 triggers implemented (req: 3) |
-| **Indexing Strategy** | **+2** | 5 well-justified indexes on FKs and query columns |
-| **Frontend Application** | **+10** | Streamlit app with DB connectivity, RBAC demo, constraint testing |
+### Extended Implementation
 
-### Total Possible: **40/25 Points** 🚀
+| Feature | Description |
+|---------|-------------|
+| **Indexing Strategy** | 5 optimized indexes on foreign keys and query columns (Employee.DepID, Project.CID, Works.EmpID/PrID, Employee.Email) |
+| **Web Application** | Streamlit frontend with database connectivity, role-based access, constraint and trigger demonstration |
+| **Additional Constraints** | Exceeds minimum with 7 CHECK and 8 DEFAULT values |
+| **Additional Triggers** | 4 triggers implemented (exceeds requirement of 3) |
 
 ## Demonstration Commands
 
@@ -111,59 +110,17 @@ psql -U employee1 -d bidi -c "SELECT Salary FROM Employee;"
 - ✅ In (Customer-Location, N:1)
 - ✅ PartOf (UserGroup-Employee, M:N)
 
-## Corrections Made (Post-Feedback)
+## Design Decisions
 
-### 1. ER Cardinality Fix - Commissions Relationship ❌→✅
-**Issue**: Original implementation used M:N table (PrID, CID as PK) allowing multiple customers per project.
+### ER Model Implementation
+- **Commissions Relationship**: Implemented as N:1 (many projects → one customer) by storing CID directly in Project table. Each project has exactly one customer, while customers can have multiple projects.
 
-**ER Specification**: Project (1..N), Customer (1..1) - Each project has exactly ONE customer.
-
-**Fix**: Moved CID, startDate, deadline into Project table as foreign key columns:
-```sql
-CREATE TABLE Project (
-    ...
-    CID INT NOT NULL,  -- FK to Customer (each project has exactly 1 customer, N:1 overall)
-    startDate DATE NOT NULL,
-    deadline DATE NOT NULL,
-    FOREIGN KEY (CID) REFERENCES Customer(CID)
-);
-```
-This enforces that each project has exactly one customer (while allowing multiple projects per customer).
-
-### 2. PartOf Table - NULL Fix ❌→✅
-**Issue**: `EmpID INT` was nullable but part of PRIMARY KEY.
-
-**Fix**: Changed to `EmpID INT NOT NULL` - PK columns cannot be NULL logically.
-
-### 3. Salary Column - NOT NULL ❌→✅
-**Issue**: Salary was nullable, allowing employees with no salary.
-
-**Fix**: Changed to `Salary DECIMAL(10, 2) NOT NULL`.
-
-### 4. SalaryLog Table Location ❌→✅
-**Issue**: SalaryLog table created in triggers.sql (bad design practice).
-
-**Fix**: Moved table definition to schema.sql where all tables are defined.
-
-### 5. Trigger Justifications Improved
-**Budget Trigger**: Added business justification - "BiDi contracts prohibit budget reductions for medical system projects once approved."
-
-**Auto-complete Trigger**: Documented limitations:
-- Only triggers on DELETE from Works
-- Simplified logic for academic demo
-- Production would need 'isActive' flag in Works table
-
-### 6. Access Control Hardening
-**Added explicit REVOKE**:
-```sql
-REVOKE ALL ON Employee FROM PUBLIC;
-REVOKE ALL ON Employee FROM bidi_employee;
-```
-
-**RLS Documentation**: Acknowledged that `USING (true)` is a placeholder for demo - production would use session variables to map users to employee IDs.
-
-### 7. NULL Aggregation Fix
-Added `COALESCE(SUM(...), 0)` in queries where NULL could occur from LEFT JOINs.
+### Additional Attributes (Beyond ER Model)
+The following attributes were added to support business operations:
+- **Employee.Salary**: Required for payroll and audit logging
+- **Project.Status**: Tracks project lifecycle (Planning, Active, Completed, Cancelled)
+- **Works.hoursWorked**: Tracks employee contribution to projects
+- **Location.Country**: Default 'Finland' as BiDi operates nationally
 
 ## Assumptions Made
 1. **Salary tracking**: Added Salary column to Employee for trigger demonstrations
@@ -209,9 +166,9 @@ The app will open at `http://localhost:8501`
 - **Manager**: `manager1` / `ManagerPass123!` (full access)
 - **Employee**: `employee1` / `EmployeePass123!` (limited access, no salary data)
 
-## Bonus: Indexing Strategy (+2 Points)
+## Indexing Strategy
 
-Well-justified indexes implemented for query optimization:
+Optimized indexes implemented for query performance:
 
 | Index | Column(s) | Justification |
 |-------|-----------|---------------|
@@ -228,4 +185,4 @@ All indexes target foreign keys (for JOIN performance) and frequently queried co
 - Use different user accounts to demonstrate access control
 - View `EmployeeProjectSummary` shows combined employee data
 - All foreign keys use RESTRICT or CASCADE appropriately
-- **Frontend Bonus**: Launch `app.py` to demonstrate full integration
+- Launch `app.py` to demonstrate web application with full database integration

@@ -63,7 +63,7 @@ CREATE TABLE Employee (
     Name VARCHAR(100) NOT NULL,
     DepID INT NOT NULL,
     HireDate DATE DEFAULT CURRENT_DATE,
-    Salary DECIMAL(10, 2) NOT NULL,  -- Changed: Salary should not be NULL
+    Salary DECIMAL(10, 2) NOT NULL,
     
     -- CHECK constraint 2: Email must contain @
     CONSTRAINT chk_employee_email CHECK (Email LIKE '%@%'),
@@ -93,28 +93,20 @@ CREATE TABLE UserGroup (
 );
 
 -- ============================================
--- 7. PROJECT TABLE
+-- 7. PROJECT TABLE (Commissions relationship: N projects → 1 customer)
 -- ============================================
--- ER Note: Commissions relationship - Project (1..N), Customer (1..1)
--- Each project has exactly ONE customer (N projects can belong to 1 customer)
--- This is N:1 relationship (many projects → one customer), NOT 1:1
--- Therefore: CID is stored directly in Project table as foreign key
 CREATE TABLE Project (
     PrID SERIAL PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
     Budget DECIMAL(12, 2) NOT NULL,
     Status VARCHAR(20) DEFAULT 'Planning',
-    CID INT NOT NULL,  -- FK to Customer (each project has exactly 1 customer)
+    CID INT NOT NULL,
     startDate DATE NOT NULL DEFAULT CURRENT_DATE,
     deadline DATE NOT NULL,
     
-    -- CHECK constraint 4: Budget must be positive
     CONSTRAINT chk_budget_positive CHECK (Budget > 0),
-    -- CHECK constraint 5: Status must be valid
     CONSTRAINT chk_status_valid CHECK (Status IN ('Planning', 'Active', 'Completed', 'Cancelled')),
-    -- CHECK constraint 6: Deadline must be after start date
     CONSTRAINT chk_project_deadline CHECK (deadline > startDate),
-    -- NOTE: No UNIQUE constraint needed on CID - a customer CAN have multiple projects
     
     FOREIGN KEY (CID) REFERENCES Customer(CID)
         ON DELETE RESTRICT
@@ -182,11 +174,9 @@ CREATE TABLE Has (
 -- ============================================
 -- 11. PARTOF (UserGroup - Employee relationship)
 -- ============================================
--- ER Cardinality: UserGroup (1..N), Employee (0..N)
--- Note: EmpID is NOT NULL - PK columns cannot be NULL logically
 CREATE TABLE PartOf (
     GrID INT NOT NULL,
-    EmpID INT NOT NULL,  -- Changed: was INT (nullable), now NOT NULL
+    EmpID INT NOT NULL,
     joinedDate DATE DEFAULT CURRENT_DATE,
     
     PRIMARY KEY (GrID, EmpID),
@@ -202,8 +192,6 @@ CREATE TABLE PartOf (
 -- ============================================
 -- 12. SALARY LOG (Audit table for trigger)
 -- ============================================
--- Note: This table is created in schema because it stores data
--- The trigger logic is in triggers.sql, but the table belongs here
 CREATE TABLE SalaryLog (
     LogID SERIAL PRIMARY KEY,
     EmpID INT NOT NULL,
@@ -218,23 +206,12 @@ CREATE TABLE SalaryLog (
 );
 
 -- ============================================
--- INDEXING STRATEGY (+2 Bonus Points)
--- Well-justified indexes for query optimization
+-- INDEXING STRATEGY
+-- Optimized indexes on foreign keys and frequently queried columns
 -- ============================================
 
--- Index 1: Employee.DepID - Foreign key, frequently joined with Department
--- Justification: Department-Employee queries are common (organizational hierarchy)
 CREATE INDEX idx_employee_dept ON Employee(DepID);
-
--- Index 2: Project.CID - Foreign key, joined with Customer in most project queries
--- Justification: Project-Customer relationship queries are core business need
 CREATE INDEX idx_project_customer ON Project(CID);
-
--- Index 3: Works.EmpID and Works.PrID - Composite FK relationship
--- Justification: M:N relationship queries need fast lookup for both directions
 CREATE INDEX idx_works_employee ON Works(EmpID);
 CREATE INDEX idx_works_project ON Works(PrID);
-
--- Index 4: Employee.Email - Unique identifier, used for lookups
--- Justification: Email is unique and frequently used for login/identification
 CREATE INDEX idx_employee_email ON Employee(Email);

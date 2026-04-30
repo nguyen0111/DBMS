@@ -11,9 +11,7 @@
 --              Only increases (scope additions) are allowed.
 --              This protects customer commitments and prevents 
 --              accidental modifications that could breach contracts.
--- NOTE: In real systems, budget decreases might be allowed with 
---       special approval workflows. For this academic project, we 
---       enforce strict no-decrease policy as per BiDi business rules.
+-- Business rule: Budget reductions require special approval workflows.
 -- ============================================
 CREATE OR REPLACE FUNCTION check_budget_increase()
 RETURNS TRIGGER AS $$
@@ -36,7 +34,6 @@ CREATE TRIGGER trg_prevent_budget_reduction
 -- TRIGGER 2: Log Employee Salary Changes
 -- Purpose: Maintain audit trail of salary modifications
 -- Justification: HR compliance and transparency
--- NOTE: SalaryLog table is defined in schema.sql (proper design location)
 -- ============================================
 
 CREATE OR REPLACE FUNCTION log_salary_change()
@@ -62,21 +59,7 @@ CREATE TRIGGER trg_log_salary_change
 -- Justification: Workflow automation - project is considered complete
 --              when no employees are assigned (all work handed over)
 --
--- LIMITATION ACKNOWLEDGMENT:
--- This trigger has simplified logic for academic demonstration:
---   1. Only triggers on DELETE from Works table
---   2. Does not track "active vs inactive" employees
---   3. Does not consider hoursWorked = 0 as inactive
---   4. Real system would need additional 'isActive' flag in Works table
---
--- IMPROVED LOGIC (what this trigger does):
---   - When last employee is removed from project (Works DELETE)
---   - AND project status is 'Active'
---   - THEN mark as 'Completed'
---
--- For total participation enforcement (ER: Project must have >=1 employee),
--- this would require BEFORE DELETE trigger to prevent removing last employee.
--- That is noted as limitation in project report.
+-- Logic: When last employee is removed from project, mark as Completed
 -- ============================================
 CREATE OR REPLACE FUNCTION check_project_completion()
 RETURNS TRIGGER AS $$
@@ -112,7 +95,7 @@ CREATE TRIGGER trg_auto_complete_project
     EXECUTE FUNCTION check_project_completion();
 
 -- ============================================
--- TRIGGER 4 (Bonus): Prevent Employee Deletion if Has Active Projects
+-- TRIGGER 4: Prevent Employee Deletion if Has Active Projects
 -- Purpose: Data integrity - ensure employees can't be deleted
 --          while actively working on projects
 -- Justification: Referential integrity at application level

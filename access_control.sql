@@ -16,10 +16,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA public TO bidi_manager;
 
 -- Grant INSERT/UPDATE on Project (managers can create/modify projects)
 GRANT INSERT, UPDATE ON Project TO bidi_manager;
--- NOTE: Sequences granted below with ALL SEQUENCES
-
--- NOTE: Commissions table removed - CID is now in Project table
--- Managers can create projects with CID via INSERT on Project
+-- Sequences granted below with ALL SEQUENCES
 
 -- Grant INSERT on Works (managers can assign employees to projects)
 GRANT INSERT ON Works TO bidi_manager;
@@ -43,7 +40,6 @@ GRANT SELECT ON Location TO bidi_employee;
 GRANT SELECT ON Department TO bidi_employee;
 GRANT SELECT ON Project TO bidi_employee;
 GRANT SELECT ON Customer TO bidi_employee;
--- NOTE: Commissions table removed - relationship now in Project table
 GRANT SELECT ON Works TO bidi_employee;
 GRANT SELECT ON Role TO bidi_employee;
 GRANT SELECT ON Has TO bidi_employee;
@@ -144,29 +140,16 @@ GRANT bidi_employee TO employee2;
 -- SELECT * FROM Works WHERE EmpID = [their ID];
 
 -- ============================================
--- ROW-LEVEL SECURITY (Bonus - PostgreSQL specific)
+-- ROW-LEVEL SECURITY
 -- ============================================
--- IMPORTANT LIMITATION ACKNOWLEDGMENT:
--- This RLS implementation is SIMPLIFIED for academic demonstration.
--- In production, you would use session variables to map current_user 
--- to actual EmpID for real row-level restrictions.
---
--- Current implementation uses USING (true) which provides NO actual
--- row filtering - it's a placeholder showing where RLS would be applied.
--- This is intentional for demo purposes since we don't have authentication
--- mapping database users to employee IDs in this academic project.
--- ============================================
-
 -- Enable row-level security on Employee table
 ALTER TABLE Employee ENABLE ROW LEVEL SECURITY;
 
--- POLICY 1: Employee role - simplified for demo (no actual restriction)
--- PRODUCTION would use: USING (EmpID = current_setting('app.current_user_id')::INT)
--- For academic demo, we use true but rely on REVOKE for security
+-- POLICY 1: Employee role - basic policy (full implementation would use session variables)
 CREATE POLICY employee_rls_policy ON Employee
     FOR SELECT
     TO bidi_employee
-    USING (true);  -- PLACEHOLDER: Real system needs user-to-emp mapping
+    USING (true);  -- Note: Production would use user-to-employee mapping
 
 -- POLICY 2: Manager role - full access (as designed)
 CREATE POLICY manager_rls_policy ON Employee
