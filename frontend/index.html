@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiDi Database - CT60A7660</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🏥 BiDi Database System</h1>
+        <p>CT60A7660 – Database Systems Management</p>
+        <nav>
+            <a href="#schema">Schema</a>
+            <a href="#queries">Queries</a>
+            <a href="#demo">Live Demo</a>
+            <a href="#er">ER Model</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="overview" class="card">
+            <h2>📋 Project Overview</h2>
+            <p>BiDi is an IT company delivering medical support systems. This database manages:</p>
+            <ul>
+                <li><strong>1000 employees</strong> across 5 departments</li>
+                <li><strong>50 concurrent users</strong> (employees + customers)</li>
+                <li><strong>3 office locations</strong> in Finland</li>
+                <li><strong>Dozens of projects</strong> simultaneously</li>
+            </ul>
+        </section>
+
+        <section id="schema" class="card">
+            <h2>🗄️ Database Schema</h2>
+            <div class="tables-grid">
+                <div class="table-card">
+                    <h3>📍 Location</h3>
+                    <p><strong>PK:</strong> LID</p>
+                    <p>Address, Country</p>
+                    <span class="badge">3 records</span>
+                </div>
+                <div class="table-card">
+                    <h3>🏢 Department</h3>
+                    <p><strong>PK:</strong> DepID | <strong>FK:</strong> LID</p>
+                    <p>Name</p>
+                    <span class="badge">5 records</span>
+                </div>
+                <div class="table-card">
+                    <h3>👤 Employee</h3>
+                    <p><strong>PK:</strong> EmpID | <strong>FK:</strong> DepID</p>
+                    <p>Email, Name, HireDate, Salary</p>
+                    <span class="badge">10 records</span>
+                </div>
+                <div class="table-card">
+                    <h3>👔 Role</h3>
+                    <p><strong>PK:</strong> RoleID</p>
+                    <p>Name</p>
+                    <span class="badge">10 records</span>
+                </div>
+                <div class="table-card">
+                    <h3>👥 UserGroup</h3>
+                    <p><strong>PK:</strong> GrID</p>
+                    <p>Name, Description</p>
+                    <span class="badge">5 records</span>
+                </div>
+                <div class="table-card highlight">
+                    <h3>📁 Project</h3>
+                    <p><strong>PK:</strong> PrID | <strong>FK:</strong> CID</p>
+                    <p>Name, Budget, Status, startDate, deadline</p>
+                    <span class="badge badge-primary">8 records</span>
+                    <small>Commissions relationship merged here</small>
+                </div>
+                <div class="table-card">
+                    <h3>🤝 Customer</h3>
+                    <p><strong>PK:</strong> CID | <strong>FK:</strong> LID</p>
+                    <p>Name, Email</p>
+                    <span class="badge">5 records</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="constraints" class="card">
+            <h2>🔒 Constraints Implemented</h2>
+            <div class="constraints-list">
+                <div class="constraint-item">
+                    <h4>✅ Primary Keys</h4>
+                    <p>All 12 tables have proper PKs</p>
+                </div>
+                <div class="constraint-item">
+                    <h4>🔗 Foreign Keys</h4>
+                    <p>All relationships enforced with ON DELETE/UPDATE rules</p>
+                </div>
+                <div class="constraint-item">
+                    <h4>✓ CHECK Constraints (7 total)</h4>
+                    <ul>
+                        <li>Email format validation (@ required)</li>
+                        <li>Salary > 0</li>
+                        <li>Budget > 0</li>
+                        <li>Status in ('Planning', 'Active', 'Completed', 'Cancelled')</li>
+                        <li>deadline > startDate</li>
+                        <li>hoursWorked >= 0</li>
+                    </ul>
+                </div>
+                <div class="constraint-item">
+                    <h4>📝 DEFAULT Values (5 total)</h4>
+                    <ul>
+                        <li>Country = 'Finland'</li>
+                        <li>HireDate = CURRENT_DATE</li>
+                        <li>Status = 'Planning'</li>
+                        <li>hoursWorked = 0</li>
+                        <li>Description = 'Standard user group'</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="triggers" class="card">
+            <h2>⚡ Triggers (4 implemented)</h2>
+            <div class="triggers-list">
+                <div class="trigger-item">
+                    <h4>1. Budget Protection</h4>
+                    <p>Prevents budget reduction once project is approved</p>
+                    <code>BEFORE UPDATE ON Project</code>
+                </div>
+                <div class="trigger-item">
+                    <h4>2. Salary Audit Log</h4>
+                    <p>Records all salary changes with timestamps</p>
+                    <code>AFTER UPDATE ON Employee</code>
+                </div>
+                <div class="trigger-item">
+                    <h4>3. Auto-Complete Project</h4>
+                    <p>Marks project Completed when all workers removed</p>
+                    <code>AFTER DELETE ON Works</code>
+                </div>
+                <div class="trigger-item">
+                    <h4>4. Employee Delete Guard</h4>
+                    <p>Prevents deleting employees with active projects</p>
+                    <code>BEFORE DELETE ON Employee</code>
+                </div>
+            </div>
+        </section>
+
+        <section id="queries" class="card">
+            <h2>🔍 Sample Queries</h2>
+            <div class="query-examples">
+                <div class="query-box">
+                    <h4>Simple SELECT</h4>
+                    <pre><code>SELECT EmpID, Name, Email, HireDate
+FROM Employee
+ORDER BY Name;</code></pre>
+                </div>
+                <div class="query-box">
+                    <h4>3-Table JOIN</h4>
+                    <pre><code>SELECT e.Name, d.Name AS Dept, l.Address
+FROM Employee e
+JOIN Department d ON e.DepID = d.DepID
+JOIN Location l ON d.LID = l.LID;</code></pre>
+                </div>
+                <div class="query-box">
+                    <h4>Aggregation with HAVING</h4>
+                    <pre><code>SELECT d.Name, COUNT(e.EmpID) AS num_emp,
+       AVG(e.Salary) AS avg_salary
+FROM Department d
+LEFT JOIN Employee e ON d.DepID = e.DepID
+GROUP BY d.DepID, d.Name
+HAVING COUNT(e.EmpID) >= 2;</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="demo" class="card">
+            <h2>🎮 Interactive Demo</h2>
+            <div class="demo-controls">
+                <div class="demo-section">
+                    <h4>Test Constraint Violations</h4>
+                    <button onclick="showDemo('email')">Invalid Email</button>
+                    <button onclick="showDemo('salary')">Negative Salary</button>
+                    <button onclick="showDemo('budget')">Budget Reduction</button>
+                </div>
+                <div id="demo-output" class="demo-output">
+                    <p>Click a button to see expected database response...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="access" class="card">
+            <h2>🔐 Access Control</h2>
+            <div class="access-grid">
+                <div class="access-card manager">
+                    <h4>👔 bidi_manager</h4>
+                    <ul>
+                        <li>✅ SELECT all tables</li>
+                        <li>✅ INSERT/UPDATE Project</li>
+                        <li>✅ INSERT Works</li>
+                        <li>✅ View SalaryLog</li>
+                    </ul>
+                    <p><strong>Users:</strong> manager1, manager2</p>
+                </div>
+                <div class="access-card employee">
+                    <h4>👤 bidi_employee</h4>
+                    <ul>
+                        <li>✅ SELECT basic tables</li>
+                        <li>✅ View EmployeePublic (no salary)</li>
+                        <li>❌ Cannot access Employee table directly</li>
+                        <li>❌ Cannot modify data</li>
+                    </ul>
+                    <p><strong>Users:</strong> employee1, employee2</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="er" class="card">
+            <h2>📊 ER Model</h2>
+            <div class="er-diagram">
+                <div class="er-entities">
+                    <h4>Entities</h4>
+                    <ul>
+                        <li>Project (PrID, Name, Budget, Status, CID, startDate, deadline)</li>
+                        <li>Customer (CID, Name, Email, LID)</li>
+                        <li>Location (LID, Address, Country)</li>
+                        <li>Department (DepID, Name, LID)</li>
+                        <li>Employee (EmpID, Email, Name, DepID, HireDate, Salary)</li>
+                        <li>Role (RoleID, Name)</li>
+                        <li>UserGroup (GrID, Name, Description)</li>
+                    </ul>
+                </div>
+                <div class="er-relationships">
+                    <h4>Relationships</h4>
+                    <ul>
+                        <li><strong>Commissions:</strong> Project N:1 Customer (CID in Project)</li>
+                        <li><strong>Works:</strong> Project M:N Employee</li>
+                        <li><strong>Has:</strong> Employee M:N Role</li>
+                        <li><strong>In:</strong> Employee N:1 Department</li>
+                        <li><strong>In:</strong> Department N:1 Location</li>
+                        <li><strong>In:</strong> Customer N:1 Location</li>
+                        <li><strong>PartOf:</strong> UserGroup M:N Employee</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>CT60A7660 – Database Systems Management | LUT University – Lahti Campus</p>
+        <p>Submitted: April 2026</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
