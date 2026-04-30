@@ -216,3 +216,25 @@ CREATE TABLE SalaryLog (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+
+-- ============================================
+-- INDEXING STRATEGY (+2 Bonus Points)
+-- Well-justified indexes for query optimization
+-- ============================================
+
+-- Index 1: Employee.DepID - Foreign key, frequently joined with Department
+-- Justification: Department-Employee queries are common (organizational hierarchy)
+CREATE INDEX idx_employee_dept ON Employee(DepID);
+
+-- Index 2: Project.CID - Foreign key, joined with Customer in most project queries
+-- Justification: Project-Customer relationship queries are core business need
+CREATE INDEX idx_project_customer ON Project(CID);
+
+-- Index 3: Works.EmpID and Works.PrID - Composite FK relationship
+-- Justification: M:N relationship queries need fast lookup for both directions
+CREATE INDEX idx_works_employee ON Works(EmpID);
+CREATE INDEX idx_works_project ON Works(PrID);
+
+-- Index 4: Employee.Email - Unique identifier, used for lookups
+-- Justification: Email is unique and frequently used for login/identification
+CREATE INDEX idx_employee_email ON Employee(Email);

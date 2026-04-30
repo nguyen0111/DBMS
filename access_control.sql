@@ -24,8 +24,14 @@ GRANT INSERT, UPDATE ON Project TO bidi_manager;
 -- Grant INSERT on Works (managers can assign employees to projects)
 GRANT INSERT ON Works TO bidi_manager;
 
--- Grant SELECT on SalaryLog (managers can view salary history)
-GRANT SELECT ON SalaryLog TO bidi_manager;
+-- Grant SELECT, INSERT on SalaryLog (managers can view salary history and trigger can log)
+GRANT SELECT, INSERT ON SalaryLog TO bidi_manager;
+
+-- Grant SELECT on EmployeePublic view (managers can view public employee data)
+GRANT SELECT ON EmployeePublic TO bidi_manager;
+
+-- Grant ALL on Employee table (managers need full access for testing and management)
+GRANT ALL ON Employee TO bidi_manager;
 
 -- Role 2: bidi_employee - Limited read access, no salary info
 -- Can view their own data, projects, but NOT salaries
