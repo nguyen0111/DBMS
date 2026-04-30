@@ -18,6 +18,27 @@ Complete PostgreSQL database implementation for BiDi IT company with:
 | `access_control.sql` | Roles (manager, employee), users, and privilege management |
 | `demo_queries.sql` | Constraint violations and trigger demonstrations |
 | `setup.sh` | One-command setup script |
+| `frontend/` | Interactive web demo (HTML/CSS/JS) |
+
+## Frontend Demo
+
+An interactive web frontend is included in the `/frontend` directory:
+- **Schema visualization** - All 12 tables with relationships
+- **Constraints display** - All CHECK constraints and triggers explained
+- **Query examples** - Sample SQL with syntax highlighting
+- **Interactive demo** - Click buttons to see constraint violations
+- **ER Model** - Complete entity-relationship diagram
+
+### View Frontend
+```bash
+# Open directly in browser
+cd frontend
+open index.html
+
+# Or serve with Python
+python -m http.server 8000
+# Then visit http://localhost:8000
+```
 
 ## Quick Start
 
