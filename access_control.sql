@@ -66,3 +66,18 @@ CREATE POLICY manager_rls_policy ON Employee
     TO bidi_manager
     USING (true)
     WITH CHECK (true);
+
+-- Demonstration queries (run as different users)
+-- Connect as manager1: psql -U manager1 -d bidi
+-- SELECT * FROM Employee; -- SUCCESS
+-- SELECT Name, Salary FROM Employee; -- SUCCESS (can see salaries)
+-- INSERT INTO Project (Name, Budget, Status) VALUES ('Test', 50000, 'Planning'); -- SUCCESS
+-- UPDATE Project SET Budget = 60000 WHERE PrID = 1; -- SUCCESS
+-- SELECT * FROM SalaryLog; -- SUCCESS
+
+-- Connect as employee1: psql -U employee1 -d bidi
+-- SELECT * FROM Employee; -- FAIL (permission denied)
+-- SELECT Name, Salary FROM Employee; -- FAIL (permission denied)
+-- SELECT * FROM EmployeePublic; -- SUCCESS (no salary column)
+-- INSERT INTO Project (Name, Budget, Status) VALUES ('Test', 1000000, 'Active'); -- FAIL
+-- SELECT * FROM Project; -- SUCCESS
